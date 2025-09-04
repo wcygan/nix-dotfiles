@@ -1,0 +1,7 @@
+.git
+result
+result-*
+.direnv
+.DS_Store
+tmp
+*.log

@@ -1,0 +1,51 @@
+# Minimal Fedora userland to validate install scripts
+FROM fedora:40
+
+ARG USER=tester
+ARG UID=1000
+ARG GID=1000
+
+# Base tools needed by your scripts and sanity checks, plus systemd
+RUN dnf -y update && \
+    dnf -y install \
+      curl git make bash sudo which findutils coreutils procps-ng \
+      shadow-utils systemd \
+    && dnf clean all
+
+# Non-root user (mirrors typical workstation paths like /home/<user>)
+RUN groupadd -g ${GID} ${USER} && \
+    useradd -m -u ${UID} -g ${GID} -s /bin/bash ${USER} && \
+    echo "${USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/99-${USER}
+
+USER ${USER}
+WORKDIR /home/${USER}/app
+
+# Copy your repo into the image
+# (Add a .dockerignore to exclude result/, result-*, .git, etc.)
+COPY --chown=${USER}:${USER} . .
+
+# Install Nix (Determinate Systems). Single-user mode in container.
+# Non-interactive with systemd available but not running.
+RUN curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix \
+  | sh -s -- install --no-confirm
+
+# Fix permissions for single-user mode (the installer runs with sudo)
+RUN sudo chown -R ${USER}:${USER} /nix
+
+# Source Nix environment
+RUN echo '. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' >> ~/.bashrc
+
+# Environment for single-user Nix in containers
+ENV NIX_CONFIG="experimental-features = nix-command flakes"
+ENV PATH="/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PATH}"
+
+# Bootstrap: install packages from flake, link configs (non-destructive),
+# and run a quick pre-flight test.
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
+  echo ">>> nix version:" && nix --version && \
+  ./scripts/install-packages.sh && \
+  ./scripts/link-config.sh --dry-run && \
+  make test-pre
+
+# Default shell; you can override with `docker run ... fish -l`
+CMD ["/bin/bash", "-lc", "echo 'Container ready.'; echo 'Try: nix profile list && ./scripts/link-config.sh --dry-run'; bash"]
