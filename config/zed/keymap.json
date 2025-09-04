@@ -21,7 +21,7 @@
       "cmd-alt-right": "pane::ActivateNextItem",
       // 🤖 AI Assistant
       "cmd-k": "assistant::InlineAssist",
-      "cmd-3": "assistant::QuoteSelection"
+      "cmd-3": "agent::QuoteSelection"
     }
   }
 ]
