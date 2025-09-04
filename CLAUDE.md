@@ -1,300 +1,126 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance for AI assistants when working with this repository.
 
-## Repository Overview
+## Repository Purpose
 
-This is a Nix-based dotfiles repository for cross-platform package management and environment configuration supporting macOS, Fedora, and Ubuntu. It uses Nix flakes to provide a declarative, reproducible system setup.
+This repository provides a **hybrid developer setup**:
 
-## Nix Core Concepts
+- **Nix (flakes)**: Used strictly for cross-platform **package management** (Linux/macOS).
+- **Dotfiles**: Application and shell configuration files are stored under `/config` and symlinked into `~/.config` or other expected locations.
 
-### Functional Package Management
-Nix is a purely functional package manager that treats packages as immutable values built by functions. Key principles:
-- **Immutability**: Packages in `/nix/store` cannot be modified after creation
-- **Reproducibility**: Same inputs always produce identical outputs
-- **Isolation**: Multiple package versions coexist without conflicts
-- **Atomicity**: Upgrades and rollbacks are atomic operations
+The goal is to keep **Nix declarative for tooling** while leaving **dotfiles conventional and portable**.
 
-### The Nix Store
-- **Location**: `/nix/store` contains all packages and dependencies
-- **Naming**: Packages use cryptographic hashes (e.g., `/nix/store/hash-name-version`)
-- **References**: Store objects track dependencies precisely
-- **Garbage Collection**: Unused packages can be safely removed
+---
 
-### Derivations
-Derivations are build recipes that specify:
-- **Inputs**: Dependencies and source files
-- **Builder**: Executable that performs the build
-- **Environment**: Variables for the build process
-- **Outputs**: One or more resulting store paths
+## Core Concepts
 
-### Profiles & Generations
-- **Profiles**: Mutable references to immutable store paths
-- **Generations**: Historical versions of a profile
-- **Rollback**: Switch between generations instantly
-- **User Profiles**: Each user has isolated package environments
+### Nix Package Management
+- Nix is used to install and manage system-level packages via the root `flake.nix`.
+- It provides reproducible environments across Linux and macOS.
+- We do **not** use Nix to manage dotfiles (no Home Manager). Instead, dotfiles are symlinked.
 
-## Development Environment
-
-- **Shell**: Fish shell (https://fishshell.com/docs/current/#configuration)
-  - Configuration: `~/.config/fish/config.fish`
-  - Functions: `~/.config/fish/functions/`
-  - Completions: `~/.config/fish/completions/`
-  
-- **Terminal**: Ghostty (https://ghostty.org/docs/config)
-  - Configuration: `~/.config/ghostty/config`
-  
-- **Editor**: Zed (https://zed.dev/docs/configuring-zed)
-  - Settings: `~/.config/zed/settings.json`
-  - Keymap: `~/.config/zed/keymap.json`
-
-## Common Commands
-
-### Installation & Setup
+**Key commands:**
 ```bash
-# Install Nix and packages (from dotfiles/ directory)
-./install.sh
-
-# Install packages without full setup
-cd dotfiles
+# Install packages defined in flake.nix
 nix profile install . --impure
-```
 
-### Package Management
-```bash
-# Update flake dependencies
+# Update flake inputs
 nix flake update
 
-# Apply package changes after editing flake.nix
+# Apply changes after editing flake.nix
 nix profile install .
-
-# List installed packages
-nix profile list
 
 # Clean old package versions
 nix-collect-garbage -d
+````
 
-# Show package dependencies
-nix-store --query --references /nix/store/path
+### Dotfiles via Symlinks
 
-# Check package closure size
-nix path-info -Sh /nix/store/path
-```
+* All user configuration lives in `/config`.
+* `scripts/link-config.sh` creates symlinks into `~/.config` or `$HOME`.
+* Each config item (e.g., `fish/`, `nvim/`, `gitconfig`) can be added incrementally.
 
-### Profile Management
+**Example:**
+
 ```bash
-# List profile generations
-nix profile history
+# Link configs
+./scripts/link-config.sh
 
-# Rollback to previous generation
-nix profile rollback
-
-# Switch to specific generation
-nix profile rollback --to N
-
-# Diff between generations
-nix profile diff-closures
+# Fish config is then available at ~/.config/fish
+# Nix helpers are available at ~/.config/shell-nix.sh (bash/zsh) or ~/.config/fish/conf.d/* (fish)
 ```
 
-### Flake Commands
-```bash
-# Show flake metadata
-nix flake show
+---
 
-# Check flake health
-nix flake check
+## Directory Structure
 
-# Update specific input
-nix flake lock --update-input nixpkgs
-
-# Build without installing
-nix build .#packageName
-
-# Develop shell environment
-nix develop
-
-# Run command in package environment
-nix run nixpkgs#package -- args
-```
-
-### Store Management
-```bash
-# Verify store integrity
-nix-store --verify --check-contents
-
-# Optimize store (hardlink duplicates)
-nix-store --optimise
-
-# Query package requisites
-nix-store --query --requisites /nix/store/path
-
-# Find referrers of a package
-nix-store --query --referrers /nix/store/path
-```
-
-### Troubleshooting
-```bash
-# Show build log
-nix log /nix/store/path
-
-# Debug evaluation
-nix eval --show-trace expression
-
-# Check why package is retained
-nix-store --query --roots /nix/store/path
-
-# Force rebuild ignoring cache
-nix build --rebuild
-
-# Show derivation details
-nix show-derivation /nix/store/path.drv
-```
-
-### macOS Nix Cleanup
-```bash
-# Remove Nix build users (rm.sh script)
-./rm.sh
-```
-
-## Architecture
-
-### Directory Structure
 ```
 .
-├── dotfiles/              # Main dotfiles directory
-│   ├── flake.nix         # Nix package definitions (edit to add/remove packages)
-│   ├── install.sh        # Main installation script
-│   ├── config/
-│   │   └── shell-nix.sh  # Shell configuration for Nix
-│   └── scripts/
-│       └── install-nix.sh # Nix installer script
-└── rm.sh                 # macOS Nix user cleanup
+├── config/                # Dotfiles (symlinked into ~/.config or $HOME)
+│   ├── fish/              # Native fish config (conf.d, functions, config.fish)
+│   └── shell-nix.sh       # Bash/zsh Nix environment glue
+├── scripts/               # Installers and linkers
+│   ├── install-nix.sh     # Installs Nix
+│   ├── install-packages.sh# Installs packages from flake.nix
+│   └── link-config.sh     # Creates symlinks for dotfiles
+├── flake.nix              # Declarative package list
+├── flake.lock             # Locked Nix inputs
+├── install.sh             # Orchestrates install → packages → symlinks
+└── .envrc                 # direnv integration with flake
 ```
 
-### Key Components
+---
 
-**flake.nix**: Declarative package list using Nix flakes. Supports multiple architectures (x86_64/aarch64 for Linux/macOS). All system packages are defined here - modify this file to add or remove tools.
+## Development Workflow
 
-**install.sh**: Orchestrates the complete setup:
-1. Installs Nix if not present
-2. Enables flakes experimental feature
-3. Installs packages via the flake
-4. Configures shell PATH for Nix
-5. Sets up dotfile symlinks (currently commented out - add as needed)
+1. **Bootstrap**
 
-### Development Workflow
+   ```bash
+   ./install.sh
+   direnv allow
+   ```
 
-When modifying packages:
-1. Edit `dotfiles/flake.nix` to add/remove packages
-2. Run `cd dotfiles && nix profile install .` to apply changes
-3. Verify with `nix profile list`
+2. **Manage Packages**
 
-The repository includes modern CLI tools (ripgrep, fd, bat, eza, delta, etc.) and development essentials (git, gh, docker, tmux, neovim, etc.) by default.
+   * Edit `flake.nix` to add/remove tools.
+   * Run `nix profile install .` to apply changes.
 
-## Nix Language Basics
+3. **Manage Dotfiles**
 
-### Data Types
-```nix
-# Primitives
-42                  # Integer
-3.14                # Float  
-true                # Boolean
-"hello"             # String
-null                # Null
+   * Add/edit configs in `/config`.
+   * Update `scripts/link-config.sh` with new symlinks.
+   * Run `./scripts/link-config.sh`.
 
-# Collections
-[ 1 2 3 ]           # List
-{ x = 1; y = 2; }   # Attribute set
-```
-
-### Functions & Expressions
-```nix
-# Function definition
-add = x: y: x + y
-
-# Let expressions
-let
-  x = 5;
-  y = 10;
-in x + y
-
-# With expressions
-with pkgs; [ git vim ]
-
-# Conditionals
-if condition then value1 else value2
-```
-
-### Flake Structure
-```nix
-{
-  description = "Package description";
-  
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
-  
-  outputs = { self, nixpkgs }: {
-    packages.x86_64-linux.default = derivation;
-    devShells.x86_64-linux.default = shell;
-  };
-}
-```
+---
 
 ## Best Practices
 
-### Flake Development
-- **Pin inputs**: Use specific commits/tags for reproducibility
-- **Lock files**: Commit `flake.lock` for consistent dependencies
-- **Pure evaluation**: Avoid impure operations when possible
-- **Modular design**: Split complex configurations into modules
+* Keep **tools** in `flake.nix`, keep **configs** in `/config`.
+* Don’t mix config into Nix derivations (avoids lock-in).
+* Run `nix-collect-garbage -d` periodically to reclaim space.
+* Use `fish_add_path` and conf.d snippets for fish shell integration.
 
-### Performance Optimization
-- **Binary caches**: Configure substituters for faster builds
-- **Store optimization**: Run `nix-store --optimise` periodically
-- **Garbage collection**: Use `nix-collect-garbage -d` regularly
-- **Minimal closures**: Reduce dependencies for smaller packages
+---
 
-### Troubleshooting Tips
-- **Build failures**: Check logs with `nix log`
-- **Evaluation errors**: Use `--show-trace` for stack traces
-- **Store corruption**: Run `nix-store --verify --check-contents`
-- **Space issues**: Clean with `nix-collect-garbage -d`
-- **Permission problems**: Ensure proper daemon/store permissions
+## Quick Reference
 
-### Security Considerations
-- **Sandboxing**: Enable build sandboxing for isolation
-- **Trusted users**: Limit who can modify the store
-- **Substituter trust**: Verify binary cache signatures
-- **Source verification**: Use hash-checked sources
+### Nix
 
-## Advanced Topics
+* `nix profile list` → list installed packages
+* `nix flake show` → show flake outputs
+* `nix develop` → open a dev shell from flake
+* `nix run nixpkgs#<pkg>` → run a package without installing
 
-### Content-Addressed Derivations
-- Experimental feature for improved caching
-- Store paths based on output content, not inputs
-- Enable with `experimental-features = ca-derivations`
+### Dotfiles
 
-### Remote Builds
-- Distribute builds across multiple machines
-- Configure builders in `/etc/nix/machines`
-- Useful for cross-compilation or resource-intensive builds
+* `./scripts/link-config.sh` → re-link configs
+* Backups are created automatically if non-symlinked files exist
 
-### Overlays & Overrides
-```nix
-# Overlay example
-overlay = self: super: {
-  package = super.package.override { option = value; };
-};
-```
+---
 
-### Development Shells
-```nix
-# Shell with specific tools
-devShells.default = pkgs.mkShell {
-  buildInputs = with pkgs; [ gcc make python3 ];
-  shellHook = ''
-    echo "Development environment loaded"
-  '';
-};
-```
+This setup provides:
+
+* **Reproducible tooling** with Nix.
+* **Portable dotfiles** with symlinks.
+* **Clear separation** of responsibilities.

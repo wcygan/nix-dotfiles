@@ -23,3 +23,6 @@ link() {
 
 # keep your Nix shell helpers:
 link "$CFG_SRC/shell-nix.sh" "$CFG_DST/shell-nix.sh"
+
+# fish config (directory link keeps the whole tree under version control)
+link "$CFG_SRC/fish" "$HOME/.config/fish"
