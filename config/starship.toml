@@ -20,7 +20,6 @@ format = """
 $directory\
 $fossil_branch\
 $git_branch\
-$git_commit\
 $git_status\
 $hg_branch\
 $pijul_channel\
@@ -72,7 +71,6 @@ $typst\
 $vlang\
 $zig\
 $fill\
-$shell\
 $time\
 $username\
 $line_break\
