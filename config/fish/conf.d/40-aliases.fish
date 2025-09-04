@@ -53,8 +53,11 @@ set -q EDITOR; or set -gx EDITOR nvim
 alias c clear
 alias dev 'cd ~/Development/'
 alias lg lazygit
+alias ldc lazydocker
+alias py python3
 alias lfg 'codex --dangerously-bypass-approvals-and-sandbox'
 alias lfgc 'claude --model opusplan --dangerously-skip-permissions'
+alias reload 'exec fish -l'
 
 # Computers
 alias t 'ssh wcygan@betty -t "tmux attach -t main || tmux new -s main"'

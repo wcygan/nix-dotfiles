@@ -39,11 +39,19 @@
                 # Version control
                 git
                 gh
+                lazygit
 
                 # Build tools
                 gnumake
                 cmake
                 pkg-config
+                just
+
+                # Programming languages
+                rustup
+                go
+                python3
+                deno
 
                 # Shell and terminal
                 fish
@@ -77,6 +85,7 @@
                 # Container tools
                 docker-client
                 docker-compose
+                lazydocker
 
                 # Nix development
                 nil
