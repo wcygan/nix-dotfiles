@@ -42,8 +42,13 @@ nix profile install . --impure
 # Step 4: Setup shell configuration
 echo "🐚 Setting up shell configuration..."
 
-# Detect shell
-SHELL_NAME=$(basename "$SHELL")
+# Detect shell - prefer environment variable if set by direnv
+if [ -n "$DOTFILES_SHELL_PREFERENCE" ]; then
+    SHELL_NAME="$DOTFILES_SHELL_PREFERENCE"
+    echo "📌 Using preferred shell from environment: $SHELL_NAME"
+else
+    SHELL_NAME=$(basename "$SHELL")
+fi
 SHELL_RC=""
 
 case "$SHELL_NAME" in
@@ -56,6 +61,11 @@ case "$SHELL_NAME" in
     fish)
         SHELL_RC="$HOME/.config/fish/config.fish"
         mkdir -p "$HOME/.config/fish"
+        # Check if Fish is actually installed
+        if ! command -v fish &> /dev/null; then
+            echo "⚠️  Fish shell requested but not found. Installing via Nix..."
+            nix profile install nixpkgs#fish
+        fi
         ;;
     *)
         echo "⚠️  Unknown shell: $SHELL_NAME. Please manually add Nix to your PATH."
@@ -65,15 +75,28 @@ esac
 if [ -n "$SHELL_RC" ]; then
     # Add Nix to PATH if not already present
     NIX_PROFILE_PATH='$HOME/.nix-profile/bin'
-    NIX_PATH_EXPORT="export PATH=\"$NIX_PROFILE_PATH:\$PATH\""
 
-    if ! grep -q "$NIX_PROFILE_PATH" "$SHELL_RC" 2>/dev/null; then
-        echo "" >> "$SHELL_RC"
-        echo "# Nix profile" >> "$SHELL_RC"
-        echo "$NIX_PATH_EXPORT" >> "$SHELL_RC"
-        echo "✅ Added Nix profile to $SHELL_RC"
+    if [ "$SHELL_NAME" = "fish" ]; then
+        # Fish shell uses different syntax
+        if ! grep -q "$NIX_PROFILE_PATH" "$SHELL_RC" 2>/dev/null; then
+            echo "" >> "$SHELL_RC"
+            echo "# Nix profile" >> "$SHELL_RC"
+            echo "fish_add_path $NIX_PROFILE_PATH" >> "$SHELL_RC"
+            echo "✅ Added Nix profile to $SHELL_RC"
+        else
+            echo "✅ Nix profile already in $SHELL_RC"
+        fi
     else
-        echo "✅ Nix profile already in $SHELL_RC"
+        # Bash/Zsh use export
+        NIX_PATH_EXPORT="export PATH=\"$NIX_PROFILE_PATH:\$PATH\""
+        if ! grep -q "$NIX_PROFILE_PATH" "$SHELL_RC" 2>/dev/null; then
+            echo "" >> "$SHELL_RC"
+            echo "# Nix profile" >> "$SHELL_RC"
+            echo "$NIX_PATH_EXPORT" >> "$SHELL_RC"
+            echo "✅ Added Nix profile to $SHELL_RC"
+        else
+            echo "✅ Nix profile already in $SHELL_RC"
+        fi
     fi
 fi
 

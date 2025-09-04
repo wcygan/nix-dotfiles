@@ -1,93 +1,97 @@
 {
-  description = "System packages for multi-platform development";
+  description = "System packages";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
-      # Support for Linux (x86_64, aarch64) and macOS (Intel, Apple Silicon)
       allSystems = [
-        "x86_64-linux"    # Intel/AMD Linux (Ubuntu, Fedora)
-        "aarch64-linux"   # ARM64 Linux
-        "x86_64-darwin"   # Intel macOS
-        "aarch64-darwin"  # Apple Silicon macOS
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
       ];
 
-      forAllSystems = f: nixpkgs.lib.genAttrs allSystems (system: f {
-        pkgs = nixpkgs.legacyPackages.${system};
-      });
+      forAllSystems =
+        f:
+        nixpkgs.lib.genAttrs allSystems (
+          system:
+          f {
+            pkgs = nixpkgs.legacyPackages.${system};
+          }
+        );
     in
     {
-      packages = forAllSystems ({ pkgs }: {
-        default = with pkgs; buildEnv {
-          name = "system-packages";
-          paths = [
-            # Version control
-            git
-            gh
+      packages = forAllSystems (
+        { pkgs }:
+        {
+          default =
+            with pkgs;
+            buildEnv {
+              name = "system-packages";
+              paths = [
+                # Version control
+                git
+                gh
 
-            # Build tools
-            gnumake
-            cmake
-            pkg-config
+                # Build tools
+                gnumake
+                cmake
+                pkg-config
 
-            # Shell and terminal
-            zsh
-            tmux
-            starship
+                # Shell and terminal
+                fish
+                zsh
+                tmux
+                starship
 
-            # Modern CLI tools
-            curl
-            wget
-            jq
-            yq
-            fzf
-            ripgrep
-            fd
-            bat
-            eza
-            delta
-            zoxide
-            atuin
+                # Modern CLI tools
+                curl
+                wget
+                jq
+                yq
+                fzf
+                ripgrep
+                fd
+                bat
+                eza
+                delta
+                zoxide
+                atuin
 
-            # Development tools
-            neovim
-            direnv
-            nix-direnv
+                # Development tools
+                neovim
+                direnv
+                nix-direnv
 
-            # Container tools
-            docker-client
-            docker-compose
+                # Container tools
+                docker-client
+                docker-compose
 
-            # Language-specific tools (optional, uncomment as needed)
-            # nodejs_20
-            # deno
-            # go
-            # rustup
-            # python3
+                # Nix development
+                nil
 
-            # Nix development
-            nil  # Nix language server
+                # System monitoring
+                htop
+                btop
+                ncdu
 
-            # System monitoring
-            htop
-            btop
-            ncdu
+                # Network tools
+                nmap
+                mtr
+                httpie
 
-            # Network tools
-            nmap
-            mtr
-            httpie
-
-            # File management
-            tree
-            unzip
-            zip
-            rsync
-          ];
-        };
-      });
+                # File management
+                tree
+                unzip
+                zip
+                rsync
+              ];
+            };
+        }
+      );
     };
 }
