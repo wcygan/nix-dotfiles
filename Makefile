@@ -66,8 +66,8 @@ test-local:
 
 # Docker isolated test
 test-docker:
-	@echo "🐳 Running Docker isolated test..."
-	@cd tests && ./test-docker.sh
+	@echo "🐳 Running Docker matrix…"
+	@cd tests && ./test-matrix.sh
 
 # Update packages
 update:

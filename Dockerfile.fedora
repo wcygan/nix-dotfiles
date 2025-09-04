@@ -1,18 +1,18 @@
-# Minimal Fedora userland to validate install scripts
+# Minimal Fedora userland to validate install scripts via install.sh (cold + warm)
 FROM fedora:40
 
 ARG USER=tester
 ARG UID=1000
 ARG GID=1000
 
-# Base tools needed by your scripts and sanity checks, plus systemd
+# Base tools needed by your scripts and sanity checks
 RUN dnf -y update && \
     dnf -y install \
       curl git make bash sudo which findutils coreutils procps-ng \
-      shadow-utils systemd \
-    && dnf clean all
+      shadow-utils systemd ca-certificates && \
+    dnf clean all
 
-# Non-root user (mirrors typical workstation paths like /home/<user>)
+# Non-root user
 RUN groupadd -g ${GID} ${USER} && \
     useradd -m -u ${UID} -g ${GID} -s /bin/bash ${USER} && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/99-${USER}
@@ -20,32 +20,43 @@ RUN groupadd -g ${GID} ${USER} && \
 USER ${USER}
 WORKDIR /home/${USER}/app
 
-# Copy your repo into the image
-# (Add a .dockerignore to exclude result/, result-*, .git, etc.)
+# Copy repo (honors .dockerignore)
 COPY --chown=${USER}:${USER} . .
 
-# Install Nix (Determinate Systems). Single-user mode in container.
-# Non-interactive with systemd available but not running.
+# Ensure scripts are executable
+RUN chmod +x install.sh || true && \
+    chmod +x rm.sh || true && \
+    find scripts -type f -name "*.sh" -exec chmod +x {} \; || true && \
+    find tests   -type f -name "*.sh"  -exec chmod +x {} \; || true && \
+    chmod +x tests/docker-test-commands.fish || true
+
+# Install Nix (Determinate Systems) single-user mode; non-interactive
 RUN curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix \
   | sh -s -- install --no-confirm
 
-# Fix permissions for single-user mode (the installer runs with sudo)
+# Fix permissions (installer may have used sudo)
 RUN sudo chown -R ${USER}:${USER} /nix
 
-# Source Nix environment
+# Source daemon profile in future shells
 RUN echo '. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' >> ~/.bashrc
 
-# Environment for single-user Nix in containers
+# Environment (flakes on; ensure Nix bins present)
 ENV NIX_CONFIG="experimental-features = nix-command flakes"
 ENV PATH="/home/${USER}/.nix-profile/bin:/nix/var/nix/profiles/default/bin:${PATH}"
 
-# Bootstrap: install packages from flake, link configs (non-destructive),
-# and run a quick pre-flight test.
+# === Cold run === drive the single entrypoint
 RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
   echo ">>> nix version:" && nix --version && \
-  ./scripts/install-packages.sh && \
-  ./scripts/link-config.sh --dry-run && \
+  ./install.sh && \
   make test-pre
 
-# Default shell; you can override with `docker run ... fish -l`
-CMD ["/bin/bash", "-lc", "echo 'Container ready.'; echo 'Try: nix profile list && ./scripts/link-config.sh --dry-run'; bash"]
+# === Warm run === prove idempotency
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
+  ./install.sh
+
+# Run fish tests non-interactively to fail on misconfigurations
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
+    fish -lc './tests/docker-test-commands.fish'
+
+# Keep the image useful for interactive debugging
+CMD ["/bin/bash", "-lc", "echo 'Container ready (Fedora). Try: fish -l && ./tests/docker-test-commands.fish'; bash"]
