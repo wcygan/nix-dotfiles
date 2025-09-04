@@ -37,6 +37,7 @@ abbr -a gd 'git diff'
 abbr -a dc 'docker compose'
 abbr -a l 'eza -la'
 
+
 # Guard example: only add k* abbr if kubectl is present
 if not type -q kubectl
     abbr -e kctx 2>/dev/null
@@ -49,3 +50,5 @@ set -q EDITOR; or set -gx EDITOR nvim
 alias c clear
 alias dev 'cd ~/Development/'
 alias lg lazygit
+alias lfg 'codex --dangerously-bypass-approvals-and-sandbox'
+alias lfgc 'claude --model opusplan --dangerously-skip-permissions'

@@ -47,6 +47,10 @@
                 zsh
                 tmux
                 starship
+                
+                # Coding agents
+                codex
+                claude-code
 
                 # Modern CLI tools
                 curl
