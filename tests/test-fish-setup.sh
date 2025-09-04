@@ -38,7 +38,7 @@ section() {
 
 # Test 1: Check fish is in flake.nix
 section "Nix Package Definition"
-if grep -qE '^\s+fish\s*$' flake.nix; then
+if grep -qE '^\s+fish\s*$' ../flake.nix; then
     pass "fish is defined in flake.nix"
 else
     fail "fish is NOT in flake.nix - need to add it"
@@ -47,12 +47,12 @@ fi
 # Test 2: Check fish config structure
 section "Fish Config Structure"
 EXPECTED_FILES=(
-    "config/fish/config.fish"
-    "config/fish/conf.d/10-nix.fish"
-    "config/fish/conf.d/20-direnv.fish"
-    "config/fish/conf.d/30-starship.fish"
-    "config/fish/functions/nix-try.fish"
-    "config/fish/functions/nix-install.fish"
+    "../config/fish/config.fish"
+    "../config/fish/conf.d/10-nix.fish"
+    "../config/fish/conf.d/20-direnv.fish"
+    "../config/fish/conf.d/30-starship.fish"
+    "../config/fish/functions/nix-try.fish"
+    "../config/fish/functions/nix-install.fish"
 )
 
 for file in "${EXPECTED_FILES[@]}"; do
@@ -66,7 +66,7 @@ done
 # Test 3: Validate fish syntax (if fish is available)
 section "Fish Syntax Validation"
 if command -v fish &> /dev/null; then
-    for file in config/fish/**/*.fish; do
+    for file in ../config/fish/**/*.fish; do
         if fish -n "$file" 2>/dev/null; then
             pass "$(basename $file) syntax valid"
         else
@@ -79,7 +79,7 @@ fi
 
 # Test 4: Check link-config.sh will link fish
 section "Symlink Configuration"
-if grep -q 'link "$CFG_SRC/fish"' scripts/link-config.sh; then
+if grep -q 'link "$CFG_SRC/fish"' ../scripts/link-config.sh; then
     pass "link-config.sh configured to symlink fish"
 else
     fail "link-config.sh missing fish symlink command"
@@ -121,7 +121,7 @@ fi
 # Test 7: Check other tools in flake
 section "Companion Tools"
 for tool in direnv starship; do
-    if grep -qE "^\s+${tool}\s*$" flake.nix; then
+    if grep -qE "^\s+${tool}\s*$" ../flake.nix; then
         pass "$tool is in flake.nix"
     else
         warn "$tool not in flake.nix (optional but recommended)"
@@ -131,8 +131,8 @@ done
 # Test 8: Dry run the symlink
 section "Symlink Dry Run"
 echo "Would create symlinks:"
-echo "  ~/.config/fish → $(pwd)/config/fish"
-echo "  ~/.config/shell-nix.sh → $(pwd)/config/shell-nix.sh"
+echo "  ~/.config/fish → $(dirname $(pwd))/config/fish"
+echo "  ~/.config/shell-nix.sh → $(dirname $(pwd))/config/shell-nix.sh"
 
 if [[ -e "$HOME/.config/fish" ]]; then
     if [[ -L "$HOME/.config/fish" ]]; then
@@ -144,8 +144,8 @@ fi
 
 # Test 9: Check .envrc
 section "Direnv Configuration"
-if [[ -f ".envrc" ]]; then
-    if grep -q "use flake" .envrc; then
+if [[ -f "../.envrc" ]]; then
+    if grep -q "use flake" ../.envrc; then
         pass ".envrc configured for flake"
     else
         warn ".envrc exists but doesn't use flake"
@@ -171,11 +171,11 @@ if [[ $FAIL_COUNT -eq 0 ]]; then
     echo -e "${GREEN}✓ All critical tests passed!${NC}"
     echo ""
     echo "Ready to install. Run:"
-    echo "  ./scripts/link-config.sh  # Create symlinks"
+    echo "  ../scripts/link-config.sh  # Create symlinks"
     echo "  exec fish -l              # Start fish session"
     echo ""
     echo "Or for full setup:"
-    echo "  ./install.sh              # Full installation"
+    echo "  ../install.sh              # Full installation"
     exit 0
 else
     echo -e "${RED}✗ Some tests failed. Fix issues before installing.${NC}"

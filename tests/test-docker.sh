@@ -18,7 +18,7 @@ if ! docker info &>/dev/null; then
     exit 1
 fi
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "📦 Building test container with Nix + Fish..."
 echo ""
@@ -43,7 +43,7 @@ WORKDIR /home/testuser
 
 # Copy our config files and test script
 COPY --chown=testuser:testuser config /tmp/test-config
-COPY --chown=testuser:testuser docker-test-commands.fish /home/testuser/run-tests.fish
+COPY --chown=testuser:testuser tests/docker-test-commands.fish /home/testuser/run-tests.fish
 
 # Setup .config directory and link fish config
 RUN mkdir -p /home/testuser/.config && \

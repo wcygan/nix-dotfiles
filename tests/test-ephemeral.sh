@@ -13,7 +13,7 @@ export TEST_CONFIG="$TEST_HOME/.config"
 
 # Save original HOME
 ORIG_HOME="$HOME"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "📁 Test environment: $TEST_DIR"
 echo "🏠 Fake HOME: $TEST_HOME"
@@ -147,8 +147,8 @@ if command -v fish &>/dev/null; then
     echo "=================================================="
     echo ""
 
-    # Run fish with our test HOME
-    HOME="$TEST_HOME" fish --init-command "source $TEST_DIR/test.fish"
+    # Run fish with our test HOME (suppress direnv warning in test)
+    HOME="$TEST_HOME" DIRENV_LOG_FORMAT="" fish --init-command "source $TEST_DIR/test.fish"
 else
     echo "⚠️  Fish not installed yet - showing what would be tested:"
     echo ""
