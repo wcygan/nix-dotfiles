@@ -36,7 +36,10 @@ abbr -a gb 'git branch'
 abbr -a gd 'git diff'
 abbr -a dc 'docker compose'
 abbr -a l 'eza -la'
-
+abbr -a gcl 'git clone'
+abbr -a gco 'git checkout'
+abbr -a d 'deno'
+abbr -a dt 'deno task'
 
 # Guard example: only add k* abbr if kubectl is present
 if not type -q kubectl
@@ -52,3 +55,27 @@ alias dev 'cd ~/Development/'
 alias lg lazygit
 alias lfg 'codex --dangerously-bypass-approvals-and-sandbox'
 alias lfgc 'claude --model opusplan --dangerously-skip-permissions'
+
+# Computers
+alias t 'ssh wcygan@betty -t "tmux attach -t main || tmux new -s main"'
+alias m1 'ssh wcygan@betty'
+alias ts 'tailscale status'
+alias td 'talosctl dashboard'
+
+# Git stuff
+alias gaa 'git add .'
+alias gbddd 'git branch | grep -v "main" | xargs git branch -d'
+alias gsw 'git switch -c'
+alias gpu 'eval git push -u origin $(git rev-parse --abbrev-ref HEAD)'
+alias gds 'gd --stat'
+alias gca 'git commit --amend --no-edit'
+alias grco 'git rebase --continue'
+
+# General
+alias z 'zed'
+alias nv 'nvim'
+
+# Intuitive map function
+# For example, to list all directories that contain a certain file:
+# find . -name .gitattributes | map dirname
+alias map "xargs -n1"

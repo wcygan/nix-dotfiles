@@ -20,7 +20,10 @@
         nixpkgs.lib.genAttrs allSystems (
           system:
           f {
-            pkgs = nixpkgs.legacyPackages.${system};
+            pkgs = import nixpkgs {
+              inherit system;
+              config.allowUnfree = true;
+            };
           }
         );
     in
@@ -47,7 +50,7 @@
                 zsh
                 tmux
                 starship
-                
+
                 # Coding agents
                 codex
                 claude-code
