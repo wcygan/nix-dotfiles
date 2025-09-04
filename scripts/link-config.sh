@@ -56,6 +56,27 @@ link "$CFG_SRC/zed" "$HOME/.config/zed"
 # ghostty config
 link "$CFG_SRC/ghostty" "$HOME/.config/ghostty"
 
+# VSCode config
+# Determine VSCode config location based on platform
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
+else
+  VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
+fi
+
+# Create VSCode config directory if it doesn't exist
+if ! $DRY_RUN; then
+  mkdir -p "$VSCODE_CONFIG_DIR"
+fi
+
+# Link VSCode settings and keybindings
+if [ -d "$VSCODE_CONFIG_DIR" ] || $DRY_RUN; then
+  link "$CFG_SRC/vscode/settings.json" "$VSCODE_CONFIG_DIR/settings.json"
+  link "$CFG_SRC/vscode/keybindings.json" "$VSCODE_CONFIG_DIR/keybindings.json"
+else
+  echo "⚠️  VSCode config directory not found, skipping VSCode config"
+fi
+
 # Disable fish greeting if fish is installed
 if command -v fish >/dev/null 2>&1; then
   if $DRY_RUN; then

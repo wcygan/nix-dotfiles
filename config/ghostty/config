@@ -1,7 +1,7 @@
 command = /Users/wcygan/.nix-profile/bin/fish
 
 # Visuals
-theme = catppuccin-frappe
+theme = idleToes
 font-size = 22
 unfocused-split-opacity = 1.0
 window-inherit-font-size = false
