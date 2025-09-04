@@ -36,8 +36,10 @@ link() {
 
 # examples you can grow over time:
 # link "$CFG_SRC/nvim" "$CFG_DST/nvim"
-# link "$CFG_SRC/tmux.conf" "$HOME/.tmux.conf"
 # link "$CFG_SRC/gitconfig" "$HOME/.gitconfig"
+
+# tmux config
+link "$CFG_SRC/tmux/tmux.conf" "$HOME/.tmux.conf"
 
 # keep your Nix shell helpers:
 link "$CFG_SRC/shell-nix.sh" "$CFG_DST/shell-nix.sh"
