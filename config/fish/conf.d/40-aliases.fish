@@ -35,6 +35,7 @@ abbr -a gl 'git log --oneline --graph --decorate --all'
 abbr -a gb 'git branch'
 abbr -a gd 'git diff'
 abbr -a dc 'docker compose'
+abbr -a l 'eza -la'
 
 # Guard example: only add k* abbr if kubectl is present
 if not type -q kubectl
