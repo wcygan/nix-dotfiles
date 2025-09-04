@@ -1,8 +1,8 @@
 {
   "lsp": {
-    "nil": {
+    "nixd": {
       "binary": {
-        "path": "/Users/wcygan/.nix-profile/bin/nil"
+        "path": "/Users/wcygan/.nix-profile/bin/nixd"
       }
     }
   }

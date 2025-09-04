@@ -73,6 +73,8 @@
 
                 # Nix development
                 nil
+                nixd
+                nixpkgs-fmt
 
                 # System monitoring
                 htop
