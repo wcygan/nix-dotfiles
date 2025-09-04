@@ -50,6 +50,9 @@ link "$CFG_SRC/fish" "$HOME/.config/fish"
 # starship config
 link "$CFG_SRC/starship.toml" "$HOME/.config/starship.toml"
 
+# zed config
+link "$CFG_SRC/zed" "$HOME/.config/zed"
+
 # Disable fish greeting if fish is installed
 if command -v fish >/dev/null 2>&1; then
   if $DRY_RUN; then
