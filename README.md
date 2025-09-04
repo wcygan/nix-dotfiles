@@ -70,82 +70,6 @@ What `./install.sh` does:
 exec fish -l
 ```
 
-**bash/zsh**
-
-Append once to `~/.bashrc` or `~/.zshrc`:
-
-```bash
-echo 'source ~/.config/shell-nix.sh' >> ~/.bashrc   # or ~/.zshrc
-```
-
-Open a new terminal.
-
----
-
-## OS‑Specific Notes
-
-### macOS
-
-* Multi‑user install is default; the daemon profile is at
-  `/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh`.
-* If you use Apple Silicon, all packages in `flake.nix` target `aarch64-darwin` automatically.
-
-### Ubuntu
-
-* Installer configures `/nix` mount and system users.
-* If you use WSL, make sure you start a **new login shell** after install.
-
-### Fedora
-
-* Installer sets an SELinux policy for Nix; keep SELinux **enforcing**.
-* If you manually disable SELinux, Nix store operations may fail.
-
----
-
-## Daily Use
-
-```bash
-# List installed packages
-nix profile list
-
-# Update flake inputs + upgrade to latest versions
-make update        # or:
-# nix flake update && nix profile upgrade '.*'
-
-# Start fish (after linking)
-make fish
-
-# Enter dev shell (if you add one later)
-nix develop
-```
-
-Symlink management:
-
-```bash
-# Re-link configs (safe: backs up non‑symlink targets)
-./scripts/link-config.sh
-
-# Preview links without changing your system
-./scripts/link-config.sh --dry-run
-```
-
----
-
-## Test Suite (Optional but handy)
-
-```bash
-# Pre‑flight checks
-make test-pre
-
-# Local ephemeral test (temp HOME, no system changes)
-make test-local
-
-# Docker isolated test (requires Docker)
-make test-docker
-```
-
-Inside Docker, run `./run-tests.fish` to exercise the fish config.
-
 ---
 
 ## Project Layout
@@ -162,32 +86,6 @@ flake.nix               # package set (cross‑platform)
 install.sh              # orchestrated installer
 Makefile                # common tasks (install, test, update, etc.)
 ```
-
----
-
-## Troubleshooting
-
-**“`xdg-open: unexpected argument ... nix-daemon.sh`”**
-
-* You likely tried to *execute* the profile script with a desktop opener.
-* Correct action is to **source** it in your shell:
-
-```bash
-. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-```
-
-**Fish doesn’t see Nix packages**
-
-* Open a **login** fish: `exec fish -l`
-* Ensure `config/fish/conf.d/10-nix.fish` exists (it adds Nix paths + env)
-
-**Fedora SELinux denials**
-
-* Keep SELinux **enforcing**; the installer ships a policy. If you changed SELinux mode, restore it and reinstall the policy by re‑running the installer.
-
-**macOS: cannot write `/nix`**
-
-* Use the Determinate installer (already in our scripts) — it creates a dedicated APFS volume and mount.
 
 ---
 
@@ -208,14 +106,3 @@ nix-collect-garbage -d
 > Full Nix removal differs by OS; use the official uninstaller from Determinate/NixOS docs if you truly want to remove `/nix`.
 
 ---
-
-## Contributing
-
-* Add tools in `flake.nix`; keep user configs under `config/`
-* Keep PRs small; run `make test-pre` before submitting
-
----
-
-## License
-
-Choose a license and add it to `LICENSE`.
