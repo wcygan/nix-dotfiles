@@ -45,6 +45,9 @@ link "$CFG_SRC/shell-nix.sh" "$CFG_DST/shell-nix.sh"
 # fish config (directory link keeps the whole tree under version control)
 link "$CFG_SRC/fish" "$HOME/.config/fish"
 
+# starship config
+link "$CFG_SRC/starship.toml" "$HOME/.config/starship.toml"
+
 # Disable fish greeting if fish is installed
 if command -v fish >/dev/null 2>&1; then
   if $DRY_RUN; then

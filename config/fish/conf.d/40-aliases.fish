@@ -46,3 +46,5 @@ set -q EDITOR; or set -gx EDITOR nvim
 
 # User-specific aliases
 alias c clear
+alias dev 'cd ~/Development/'
+alias lg lazygit
