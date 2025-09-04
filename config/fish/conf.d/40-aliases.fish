@@ -26,10 +26,15 @@ end
 
 # ——— Interactive abbreviations ———
 # Use for long flaggy commands; expands on SPACE/TAB in interactive shells.
-abbr -a gco 'git checkout'
-abbr -a gst 'git status -sb'
-abbr -a glg 'git log --oneline --graph --decorate --all'
 abbr -a kctx 'kubectl config use-context'
+abbr -a kp 'kubectl get pods'
+abbr -a kn 'kubectl get nodes'
+abbr -a gco 'git checkout'
+abbr -a gs 'git status -sb'
+abbr -a gl 'git log --oneline --graph --decorate --all'
+abbr -a gb 'git branch'
+abbr -a gb 'git diff'
+abbr -a dc 'docker compose'
 
 # Guard example: only add k* abbr if kubectl is present
 if not type -q kubectl
@@ -38,3 +43,6 @@ end
 
 # Global editor default if unset (harmless if already set elsewhere)
 set -q EDITOR; or set -gx EDITOR nvim
+
+# User-specific aliases
+alias c clear
