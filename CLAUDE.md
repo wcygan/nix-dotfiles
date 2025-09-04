@@ -6,6 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Nix-based dotfiles repository for cross-platform package management and environment configuration supporting macOS, Fedora, and Ubuntu. It uses Nix flakes to provide a declarative, reproducible system setup.
 
+## Development Environment
+
+- **Shell**: Fish shell (https://fishshell.com/docs/current/#configuration)
+  - Configuration: `~/.config/fish/config.fish`
+  - Functions: `~/.config/fish/functions/`
+  - Completions: `~/.config/fish/completions/`
+  
+- **Terminal**: Ghostty (https://ghostty.org/docs/config)
+  - Configuration: `~/.config/ghostty/config`
+  
+- **Editor**: Zed (https://zed.dev/docs/configuring-zed)
+  - Settings: `~/.config/zed/settings.json`
+  - Keymap: `~/.config/zed/keymap.json`
+
 ## Common Commands
 
 ### Installation & Setup
