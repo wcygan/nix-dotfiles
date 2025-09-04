@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Check for dry-run mode
+DRY_RUN=false
+if [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]]; then
+    DRY_RUN=true
+    echo "🔍 DRY RUN MODE - No changes will be made"
+    echo ""
+fi
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CFG_SRC="$REPO_ROOT/config"
 CFG_DST="$HOME/.config"
@@ -9,11 +17,21 @@ mkdir -p "$CFG_DST"
 
 link() {
   local src="$1" dst="$2"
-  if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-    mv "$dst" "$dst.backup.$(date +%s)"
+
+  if $DRY_RUN; then
+    echo "[DRY] Would link: $dst → $src"
+    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+      echo "      (would backup existing $dst)"
+    elif [ -L "$dst" ]; then
+      echo "      (would replace existing symlink)"
+    fi
+  else
+    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+      mv "$dst" "$dst.backup.$(date +%s)"
+    fi
+    ln -snf "$src" "$dst"
+    echo "→ $dst ↦ $src"
   fi
-  ln -snf "$src" "$dst"
-  echo "→ $dst ↦ $src"
 }
 
 # examples you can grow over time:
