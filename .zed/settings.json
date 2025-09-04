@@ -1,0 +1,9 @@
+{
+  "lsp": {
+    "nil": {
+      "binary": {
+        "path": "/Users/wcygan/.nix-profile/bin/nil"
+      }
+    }
+  }
+}
